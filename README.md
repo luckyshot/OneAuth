@@ -1,14 +1,26 @@
-# [OneAuth](https://github.com/luckyshot/OneAuth) <br><small style="opacity:.66">PHP User Authentication Library</small>
+# [OneAuth](https://github.com/luckyshot/OneAuth) <br>
+<small style="opacity:.66">PHP User Authentication Class Library</small>
 
-OneAuth is a **secure** and **simple** boilerplate PHP User Authentication System developed to provide essential functionality to manage user authentication on websites, ready to use and to build upon.
+OneAuth is a **secure** and **minimal** boilerplate PHP User Authentication System developed to provide essential functionality to manage user authentication on websites, ready to use and to build upon.
+
+* **Minimal**: OneAuth is coded to have the essential features, nothing more
+* **Secure**: Passwords are salted and encrypted in SHA-1, users keep authenticated through a cookie instead of a session file
+* **Small**: Two PHP classes and one MySQL database
+* **Scalable**: You can add new fields or integrate social media networks easily
 
 
 ## Features
 
-* **Simple**: OneAuth is coded keeping simplicity in mind
-* **Secure**: Passwords are salted and encrypted in SHA-1, users keep authenticated through a cookie instead of a session file
-* **Small**: Two PHP classes and one MySQL database
-* **Scalable**: You can add new fields or integrate social media networks easily
+- Account registration
+- Account activation (optional)
+- Login/Logout
+- Account deletion
+- Forgot/Reset password
+- Flags to enable UAC, user levels, memberships or any other user categorization
+- Secure salting and SHA-1 encryption of passwords
+- Customizable session length
+- Deleting an account removes identifiable information but keeps the user ID reserved
+- Uses PDO named parameters with a built-in debugging class (see <code>db.php</code>)
 
 ## Setup
 
