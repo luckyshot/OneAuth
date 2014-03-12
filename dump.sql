@@ -1,3 +1,8 @@
+
+--
+-- OneAuth
+--
+
 CREATE TABLE `users` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `email` varchar(100) DEFAULT NULL,

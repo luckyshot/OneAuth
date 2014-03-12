@@ -41,7 +41,7 @@ Methods to work with users (full documentation in the code):
 
 ## Flags
 
-Flags are letters that signify something. They can be used to create a User Access Control (s: subscriber, e: editor, 
+Flags are letters that can be used for User Access Control, user levels, account settings, admins&hellip; These are the two used right now:
 
 <code>d</code>: Deleted account
 
@@ -54,51 +54,47 @@ Example forms ready to copy-paste:
 
 ### Register account
 
-<textarea name="" id="" cols="30" rows="10"><form action="">
-		<input type="hidden" name="oa" value="register">
-		<input type="text" name="email" placeholder="Email">
-		<input type="password" name="password" placeholder="Password">
-		<input type="password" name="password2" placeholder="Repeat password">
-		<input type="submit" value="Register">
-	</form></textarea>
-
+<pre>&lt;form action=""&gt;
+	&lt;input type="hidden" name="oa" value="register"&gt;
+	&lt;input type="text" name="email" placeholder="Email"&gt;
+	&lt;input type="password" name="password" placeholder="Password"&gt;
+	&lt;input type="password" name="password2" placeholder="Repeat password"&gt;
+	&lt;input type="submit" value="Register"&gt;
+	&lt;/form&gt;</pre>
 
 ### Login
 
-<form action="">
-	<input type="hidden" name="oa" value="login">
-	<input type="text" name="email" placeholder="Email">
-	<input type="password" name="password" placeholder="Password">
-	<input type="submit" value="Login">
-</form>
-
+<pre>&lt;form action=""&gt;
+	&lt;input type="hidden" name="oa" value="login"&gt;
+	&lt;input type="text" name="email" placeholder="Email"&gt;
+	&lt;input type="password" name="password" placeholder="Password"&gt;
+	&lt;input type="submit" value="Login"&gt;
+	&lt;/form&gt;</pre>
 
 ### Forgot password
 
-<form action="">
-	<input type="hidden" name="oa" value="forgot">	<input type="email" placeholder="Email">
-	<input type="submit" value="Forgot password">
-</form>
-
+<pre>&lt;form action=""&gt;
+	&lt;input type="hidden" name="oa" value="forgot"&gt; &lt;input type="email" placeholder="Email"&gt;
+	&lt;input type="submit" value="Forgot password"&gt;
+	&lt;/form&gt;</pre>
 
 ### Reset password
 
-<form action="">
-	<input type="hidden" name="oa" value="reset">	<input type="password" name="password" placeholder="New password">
-	<input type="password" name="password2" placeholder="Repeat password">
-	<input type="submit" value="Set password">
-</form>
-
+<pre>&lt;form action=""&gt;
+	&lt;input type="hidden" name="oa" value="reset"&gt; &lt;input type="password" name="password" placeholder="New password"&gt;
+	&lt;input type="password" name="password2" placeholder="Repeat password"&gt;
+	&lt;input type="submit" value="Set password"&gt;
+	&lt;/form&gt;</pre>
 
 ### Edit account
 
-<form action="">
-	<input type="hidden" name="oa" value="edit">
-	<input type="text" name="email" value="" placeholder="Email">
-	<input type="password" name="password" placeholder="Leave empty to keep current password">
-	<input type="password" name="password2">
-	<input type="submit" value="Save">
-</form>
+<pre>&lt;form action=""&gt;
+	&lt;input type="hidden" name="oa" value="edit"&gt;
+	&lt;input type="text" name="email" value="" placeholder="Email"&gt;
+	&lt;input type="password" name="password" placeholder="Leave empty to keep current password"&gt;
+	&lt;input type="password" name="password2"&gt;
+	&lt;input type="submit" value="Save"&gt;
+	&lt;/form&gt;</pre>
 
 
 
