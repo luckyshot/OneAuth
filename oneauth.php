@@ -151,10 +151,27 @@ class OneAuth {
 
 
 
+
 	/**
 
-	 * edit
-	 * Edit user details
+	* activate
+	* activate user account
+	*/
+	public function activate ($data, $id = '') {
+
+		// TODO
+
+		return false;
+	}
+
+
+
+
+
+	/**
+
+	* edit
+	* Edit user details
 	*/
 	public function edit ($data, $id = '') {
 
