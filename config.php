@@ -1,7 +1,7 @@
 <?php
 
 $oaconfig = array(
-	
+
 	'url' => 	'http://localhost/oneauth', // no trailing slash
 	'path' => 	'/Users/xavi/www/OneAuth', // no trailing slash
 
@@ -19,7 +19,9 @@ $oaconfig = array(
 		'activate' => 	'n(p[:~9&g kdJ220Dl}[lK;/>,bSKoqPQjI@(DnID*^i8@OkDn',
 		'reset' => 		'lJ79K0K@@_dj;S"kMd[=+-8JnmaKAi2oDWp@oi2\"dSMWDS;aJ',
 	),
-	
-	'session' => 1209600, // in seconds. 1209600 = 14 days
+
+	'session' => 1209600, // in seconds. 1209600 = 14 days,
+
+	'activation' => true, // require new users to click on the activation link
 
 );

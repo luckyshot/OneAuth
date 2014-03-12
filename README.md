@@ -1,15 +1,19 @@
 # [OneAuth](https://github.com/luckyshot/OneAuth) <br><small style="opacity:.66">PHP User Authentication Library</small>
 
-OneAuth is a **secure** and **simple** boilerplate PHP User Authentication System designed to provide the essential functionality to manage users, ready to use or build upon.
+OneAuth is a **secure** and **simple** boilerplate PHP User Authentication System developed to provide essential functionality to manage user authentication on websites, ready to use and to build upon.
 
 
 ## Features
 
 * **Simple**: OneAuth is coded keeping simplicity in mind
 * **Secure**: Passwords are salted and encrypted in SHA-1, users keep authenticated through a cookie instead of a session file
-* **Small**: Just two PHP classes and one MySQL database
+* **Small**: Two PHP classes and one MySQL database
 * **Scalable**: You can add new fields or integrate social media networks easily
 
+## Setup
+
+1. Copy the code in <code>index.php</code> into your files to initialize OneAuth
+2. Modify <code>config.php</code> with your database details and change any other settings such as the hashes
 
 ## API
 
@@ -17,25 +21,25 @@ Methods to work with users (full documentation in the code):
 
 ###### Account
 
-- $oa->user()
-- $oa->new()
-- $oa->activate()
-- $oa->edit()
-- $oa->delete()
+- <code>$oa->user()</code>
+- <code>$oa->create()</code>
+- <code>$oa->activate()</code>
+- <code>$oa->edit()</code>
+- <code>$oa->delete()</code>
 
 ###### Session
 
-- $oa->login()
-- $oa->logout()
+- <code>$oa->login()</code>
+- <code>$oa->logout()</code>
 
 ###### Password
 
-- $oa->forgotpass()
-- $oa->resetpass()
+- <code>$oa->forgotpass()</code>
+- <code>$oa->resetpass()</code>
 
 ###### Flags
 
-- $oa->hasflag()
+- <code>$oa->hasflag()</code>
 
 
 
@@ -43,7 +47,7 @@ Methods to work with users (full documentation in the code):
 
 Flags are letters that can be used for User Access Control, user levels, account settings, admins&hellip; These are the two used right now:
 
-<code>d</code>: Deleted account
+<code>d</code>: Deleted account (deleted accounts cannot log in)
 
 <code>i</code>: Inactive account (needs to confirm email address)
 
@@ -60,7 +64,7 @@ Example forms ready to copy-paste:
 	&lt;input type="password" name="password" placeholder="Password"&gt;
 	&lt;input type="password" name="password2" placeholder="Repeat password"&gt;
 	&lt;input type="submit" value="Register"&gt;
-	&lt;/form&gt;</pre>
+&lt;/form&gt;</pre>
 
 ### Login
 
@@ -69,22 +73,24 @@ Example forms ready to copy-paste:
 	&lt;input type="text" name="email" placeholder="Email"&gt;
 	&lt;input type="password" name="password" placeholder="Password"&gt;
 	&lt;input type="submit" value="Login"&gt;
-	&lt;/form&gt;</pre>
+&lt;/form&gt;</pre>
 
 ### Forgot password
 
 <pre>&lt;form action=""&gt;
-	&lt;input type="hidden" name="oa" value="forgot"&gt; &lt;input type="email" placeholder="Email"&gt;
+	&lt;input type="hidden" name="oa" value="forgot"&gt;
+	&lt;input type="email" placeholder="Email"&gt;
 	&lt;input type="submit" value="Forgot password"&gt;
-	&lt;/form&gt;</pre>
+&lt;/form&gt;</pre>
 
 ### Reset password
 
 <pre>&lt;form action=""&gt;
-	&lt;input type="hidden" name="oa" value="reset"&gt; &lt;input type="password" name="password" placeholder="New password"&gt;
+	&lt;input type="hidden" name="oa" value="reset"&gt;
+	&lt;input type="password" name="password" placeholder="New password"&gt;
 	&lt;input type="password" name="password2" placeholder="Repeat password"&gt;
 	&lt;input type="submit" value="Set password"&gt;
-	&lt;/form&gt;</pre>
+&lt;/form&gt;</pre>
 
 ### Edit account
 
@@ -94,7 +100,7 @@ Example forms ready to copy-paste:
 	&lt;input type="password" name="password" placeholder="Leave empty to keep current password"&gt;
 	&lt;input type="password" name="password2"&gt;
 	&lt;input type="submit" value="Save"&gt;
-	&lt;/form&gt;</pre>
+&lt;/form&gt;</pre>
 
 
 
