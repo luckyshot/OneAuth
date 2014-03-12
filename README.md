@@ -1,117 +1,116 @@
-# [OneAuth](http://www.github.com/)
+# [OneAuth](https://github.com/luckyshot/OneAuth) PHP User Authentication Library
 
-OneAuth is a **minimal** and **secure** PHP User Authentication System specially designed to provide the essential functionality to manage users, allowing for full control and customization of the Front-End and the Back-End.
-
-OneAuth is **just one PHP file and one MySQL table**.
-
-Copyright (c) 2012 **[Xavi Esteve](http://xaviesteve.com)**
-
-_This project is in a very early stage and not functional yet_
+OneAuth is a **secure** and **simple** boilerplate PHP User Authentication System designed to provide the essential functionality to manage users, ready to use or build upon.
 
 
 ## Features
 
-* **Simple**: Purely PHP, all the front-end and forms need to be developed independently
-* **Secure**: Password is salted and encrypted, session is stored in a cookie
-* **Small**: Everything is in one PHP file and one MySQL database
-* **Scalable**: Provides basic CRUD functionality
-
+* **Simple**: OneAuth is coded keeping simplicity in mind
+* **Secure**: Passwords are salted and encrypted in SHA-1, users keep authenticated through a cookie instead of a session file
+* **Small**: Just two PHP classes and one MySQL database
+* **Scalable**: You can add new fields or integrate social media networks easily
 
 
 ## API
 
-Methods to work with users:
+Methods to work with users (full documentation in the code):
 
-### $oa->register (email*, password*, password2*)
+###### Account
 
-_Returns:_ User ID on success or `false`
+- $oa->user()
+- $oa->new()
+- $oa->activate()
+- $oa->edit()
+- $oa->delete()
 
+###### Session
 
-### $oa->activate (token*)
+- $oa->login()
+- $oa->logout()
 
-_Returns:_ `true` or `false`
+###### Password
 
-
-### $oa->login (email*, password*)
-
-_Returns:_ `true` or `false`
-
-
-### $oa->logout (url)
-
-_Returns:_ `true` or `false`
-
-`url` redirects user there on success
-
-
-### $oa->forgotpass (email*, password*)
-
-_Returns:_ `true` or `false`
-
-
-### $oa->resetpass (token*, password*, password2*)
-
-_Returns:_ `true` or `false`
-
-
-### $oa->changepass (password*, password2*)
-
-_Returns:_ `true` or `false`
-
-
-### $oa->user (param)
-
-_Returns:_ user parameter value. If param is empty returns an array with all of them. (Available parameters are all except `password` and `token`)
-
-
-### $oa->logged_in ()
-
-_Returns:_ `true` if logged in or `false`
-
-
-### $oa->c (message)
-
-If message, it adds to the console buffer.
-
-If empty, it returns all the console buffer.
+- $oa->forgotpass()
+- $oa->resetpass()
 
 
 
-## CRUD
-
-Basic Create/Read/Update/Delete methods to work with the database:
-
-### $oa->select (what = ‘*', from*, where)
-
-Example: update(‘id', ‘users', ‘email = "xavi@example.com");
 
 
-### $oa->insert (into*, values*)
+## Flags
 
-_Returns:_ `ID` (or `true`) or `false`
+<code>d</code>: Deleted account
 
-
-### $oa->update (table*, values*, where*)
-
-_Returns:_ `true` or `false`
+<code>i</code>: Inactive account (needs to confirm email address)
 
 
-### $oa->delete (from*, where*)
+## Forms
 
-_Returns:_ `true` or `false`
+Example forms ready to copy-paste:
+
+### Register account
+
+<form action="">
+	<input type="hidden" name="oa" value="register">
+	<input type="text" name="email" placeholder="Email">
+	<input type="password" name="password" placeholder="Password">
+	<input type="password" name="password2" placeholder="Repeat password">
+	<input type="submit" value="Register">
+</form>
+
+
+### Login
+
+<form action="">
+	<input type="hidden" name="oa" value="login">
+	<input type="text" name="email" placeholder="Email">
+	<input type="password" name="password" placeholder="Password">
+	<input type="submit" value="Login">
+</form>
+
+
+### Forgot password
+
+<form action="">
+	<input type="hidden" name="oa" value="forgot">	<input type="email" placeholder="Email">
+	<input type="submit" value="Forgot password">
+</form>
+
+
+### Reset password
+
+<form action="">
+	<input type="hidden" name="oa" value="reset">	<input type="password" name="password" placeholder="New password">
+	<input type="password" name="password2" placeholder="Repeat password">
+	<input type="submit" value="Set password">
+</form>
+
+
+### Edit account
+
+<form action="">
+	<input type="hidden" name="oa" value="edit">
+	<input type="text" name="email" value="" placeholder="Email">
+	<input type="password" name="password" placeholder="Leave empty to keep current password">
+	<input type="password" name="password2">
+	<input type="submit" value="Save">
+</form>
+
 
 
 
 ## Database
 
-* `id` (int20)
+* `id` (bigint20)
 * `email` (varchar100)
-* `password` (varchar255) Salted and SHA1 encrypted
-* `registered` (time)
-* `lastactive` (time) Used to calculate login cookie time
-* `token` (varchar255) Is used for 1) User account activation key, 2) Cookie token, 3) Password reset
-* `status` (int2) `0`: unactivated, `1`: active, `2`: password forgot, `6`: locked, `7`: banned, `9`: deleted
-* `level` (int2) default: `1`
+* `password` (char40)
+* `date_created` (datetime)
+* `date_seen` (datetime)
+* `ip` (varchar15)
+* `flags` (varchar10)
+* `token` (char40)
+
+
 
 
 
