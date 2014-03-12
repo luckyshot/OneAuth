@@ -244,6 +244,24 @@ class OneAuth {
 	}
 
 
+	/**
+
+	 * 
+	 * 
+	*/
+	public function hasflag ($flag, $id = '') {
+		$user = $this->user($id);
+		if (!$user) return false;
+
+		if (strpos($user['flags'], $flag) !== false) {
+			return true;
+		}else{
+			return false;
+		}
+	}
+
+
+
 
 
 

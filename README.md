@@ -33,11 +33,15 @@ Methods to work with users (full documentation in the code):
 - $oa->forgotpass()
 - $oa->resetpass()
 
+###### Flags
 
+- $oa->hasflag()
 
 
 
 ## Flags
+
+Flags are letters that signify something. They can be used to create a User Access Control (s: subscriber, e: editor, 
 
 <code>d</code>: Deleted account
 
@@ -50,13 +54,13 @@ Example forms ready to copy-paste:
 
 ### Register account
 
-<form action="">
-	<input type="hidden" name="oa" value="register">
-	<input type="text" name="email" placeholder="Email">
-	<input type="password" name="password" placeholder="Password">
-	<input type="password" name="password2" placeholder="Repeat password">
-	<input type="submit" value="Register">
-</form>
+<textarea name="" id="" cols="30" rows="10"><form action="">
+		<input type="hidden" name="oa" value="register">
+		<input type="text" name="email" placeholder="Email">
+		<input type="password" name="password" placeholder="Password">
+		<input type="password" name="password2" placeholder="Repeat password">
+		<input type="submit" value="Register">
+	</form></textarea>
 
 
 ### Login
