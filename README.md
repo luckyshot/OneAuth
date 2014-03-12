@@ -1,4 +1,4 @@
-# [OneAuth](https://github.com/luckyshot/OneAuth) PHP User Authentication Library
+# [OneAuth](https://github.com/luckyshot/OneAuth) <br><small style="opacity:.66">PHP User Authentication Library</small>
 
 OneAuth is a **secure** and **simple** boilerplate PHP User Authentication System designed to provide the essential functionality to manage users, ready to use or build upon.
 
