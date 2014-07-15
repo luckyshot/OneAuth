@@ -1,6 +1,6 @@
 # [OneAuth](https://github.com/luckyshot/OneAuth) <br>PHP User Authentication Class Library with UAC features
 
-OneAuth is a **secure** and **minimal** boilerplate PHP User Authentication System developed to provide essential functionality to manage user authentication on websites, ready to use and to build upon.
+OneAuth is a **secure** and **minimal** boilerplate PHP User Authentication System developed to provide essential functionality to manage user authentication on websites, ready to use and to build upon your REST server, use it in a framework like Limonade or any other project.
 
 * **Minimal**: OneAuth is coded to have the essential features, nothing more
 * **Secure**: Passwords are salted and encrypted in SHA-1, users keep authenticated through a cookie instead of a session file
@@ -10,21 +10,28 @@ OneAuth is a **secure** and **minimal** boilerplate PHP User Authentication Syst
 
 ## Features
 
-- Account registration
-- Account activation (optional)
+- Register new account
+- Activate account (optional)
+- Edit account
 - Login/Logout
-- Account deletion
+- Account deletion (removes identifiable information but keeps the user for historical reasons)
 - Forgot/Reset password
 - Flags to enable UAC, user levels, memberships or any other user categorization
 - Secure salting and SHA-1 encryption of passwords
 - Customizable session length
-- Deleting an account removes identifiable information but keeps the user ID reserved
 - Uses PDO named parameters with a built-in debugging class (see <code>db.php</code>)
 
 ## Setup
 
-1. Copy the code in <code>index.php</code> into your files to initialize OneAuth
+1. Copy this into your files to initialize OneAuth:
+<pre>require_once('config.php');
+require_once('oneauth.php');
+
+$oa = new OneAuth($oaconfig);</pre>
+
 2. Modify <code>config.php</code> with your database details and change any other settings such as the hashes
+
+3. Check <code>index.php</code> for usage examples
 
 ## API
 
@@ -62,56 +69,6 @@ Flags are letters that can be used for User Access Control, user levels, account
 
 <code>i</code>: Inactive account (needs to confirm email address)
 
-
-## Forms
-
-Example forms ready to copy-paste:
-
-### Register account
-
-<pre>&lt;form action=""&gt;
-	&lt;input type="hidden" name="oa" value="register"&gt;
-	&lt;input type="text" name="email" placeholder="Email"&gt;
-	&lt;input type="password" name="password" placeholder="Password"&gt;
-	&lt;input type="password" name="password2" placeholder="Repeat password"&gt;
-	&lt;input type="submit" value="Register"&gt;
-&lt;/form&gt;</pre>
-
-### Login
-
-<pre>&lt;form action=""&gt;
-	&lt;input type="hidden" name="oa" value="login"&gt;
-	&lt;input type="text" name="email" placeholder="Email"&gt;
-	&lt;input type="password" name="password" placeholder="Password"&gt;
-	&lt;input type="submit" value="Login"&gt;
-&lt;/form&gt;</pre>
-
-### Forgot password
-
-<pre>&lt;form action=""&gt;
-	&lt;input type="hidden" name="oa" value="forgot"&gt;
-	&lt;input type="email" placeholder="Email"&gt;
-	&lt;input type="submit" value="Forgot password"&gt;
-&lt;/form&gt;</pre>
-
-### Reset password
-
-<pre>&lt;form action=""&gt;
-	&lt;input type="hidden" name="oa" value="reset"&gt;
-	&lt;input type="password" name="password" placeholder="New password"&gt;
-	&lt;input type="password" name="password2" placeholder="Repeat password"&gt;
-	&lt;input type="submit" value="Set password"&gt;
-&lt;/form&gt;</pre>
-
-### Edit account
-
-<pre>&lt;form action=""&gt;
-	&lt;input type="hidden" name="oa" value="edit"&gt;
-	&lt;input type="text" name="email" value="" placeholder="Email"&gt;
-	&lt;input type="password" name="password" placeholder="Leave empty to keep current password"&gt;
-	&lt;input type="password" name="password2"&gt;
-	&lt;input type="submit" value="Save"&gt;
-&lt;/form&gt;</pre>
 
 
 
