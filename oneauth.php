@@ -11,7 +11,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//		OneAuth is a minimal and secure PHP User Authentication System specially designed
+//		OneAuth is a minimal and secure PHP MySQL User Authentication System specially designed
 //		to provide the essential functionality to manage users, allowing for full control
 //		and customization of the Front-End and the Back-End.
 //
@@ -74,11 +74,6 @@ class OneAuth {
 
 		// if no ID specified then current user
 		}else{
-			// if user's cookie invalid then delete cookie
-			if (strlen($_COOKIE['token']) != COOKIE_TOKEN_LENGTH) {
-				$this->logout();
-				return false;
-			}
 
 			if (!$this->user) {
 				$q = "SELECT * FROM ".$this->mysql['table']." WHERE token = :token LIMIT 1;";
