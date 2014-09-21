@@ -85,3 +85,43 @@ class DB {
 		return $this->stmt->fetch();
 	}
 }
+
+
+// A clone of DB to help in debugging
+
+class DBdebug {
+	private $q;
+	
+	public function query($q) {
+		$this->q = $q;
+		return $this;
+	}
+
+	public function bind($what, $with, $type = null) {
+		if (is_int($with)) {
+			$this->q = str_replace($what, $with, $this->q);
+		}else{
+			$this->q = str_replace($what, "'".$with."'", $this->q);
+		}
+		return $this;
+	}
+
+	public function execute() {
+		return $this->q;
+	}
+
+	public function insert() {
+		return $this->q;
+	}
+
+	public function resultset() {
+		return $this->q;
+	}
+
+	public function single() {
+		return $this->q;
+	}
+
+}
+
+

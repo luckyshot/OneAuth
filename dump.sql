@@ -12,5 +12,6 @@ CREATE TABLE `users` (
   `ip` varchar(15) NOT NULL,
   `flags` varchar(10) DEFAULT NULL,
   `token` char(40) NOT NULL,
+  `token_expiry` datetime NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
