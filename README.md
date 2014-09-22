@@ -23,7 +23,7 @@ OneAuth is a **secure** and **minimal** boilerplate PHP User Authentication Syst
 
 ## Requirements
 
-- PHP 5.5+ (due to <code>password_hash()</code>, use <code>crypt()</code> instead for 5.3+ compatibility)
+- PHP 5.5+ (due to <code>password_hash()</code>, use <code>crypt()</code> instead for 5.3.7+ compatibility, see below)
 - MySQL
 
 ## Setup
@@ -103,7 +103,7 @@ To debug MySQL queries replace <code>new DB</code> with <code>new DBDebug</code>
 ## TODO
 
 - *Security* Update password AND token SHA1 algorythm to [password_hash()|http://php.net/manual/en/book.password.php] or crypt
-- *Security* Individual salt ( globalSalt + individualSalt + password ) [info|http://stackoverflow.com/questions/3897434/password-security-sha1-sha256-or-sha512]
+- *Security* Add password cost method so each project can adjust cost accordingly ([code|http://php.net/manual/en/function.password-hash.php#example-923])
 - *Security* Limit failed attempts (in login and in reset)
 - *Feature* Simple user management dashboard
 
@@ -162,6 +162,15 @@ To debug MySQL queries replace <code>new DB</code> with <code>new DBDebug</code>
 - [  ] Cookies are deleted
 - [  ] token_expiry is set to past
 
+
+## PHP 5.3.7+ Compatibility
+
+Since OneAuth uses <code>password_hash()</code> it needs PHP 5.5+ to work, for those still using 5.3.7+ versions here is the code ([more info|http://php.net/manual/en/function.password-hash.php#113490]):
+
+<pre>$salt = mcrypt_create_iv(22, MCRYPT_DEV_URANDOM);
+$salt = base64_encode($salt);
+$salt = str_replace('+', '.', $salt);
+$hash = crypt('rasmuslerdorf', '$2y$10$'.$salt.'$');</pre>
 
 ## License
 
