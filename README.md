@@ -34,6 +34,9 @@ $oa = new OneAuth($oaconfig);</pre>
 
 3. Check <code>index.php</code> for usage examples
 
+4. Delete <code>index.php</code> once done!
+
+
 
 ## Class methods overview
 
