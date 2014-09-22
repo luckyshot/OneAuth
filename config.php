@@ -18,17 +18,19 @@ $oaconfig = array(
 		'password' => 	'root',
 	),
 
-	'hash' => array(
-		'password' => 	'JHbfUKYtui6@*@t2no8niUNT(@&TY@MT&@(72nt9@&TB*@DYW*',
+	'salt' => array(
 		'token' => 		'JBHF62t8bt6twb8stN0&TO977rb^£%@5veYtbUNT@*&@(P9-8m',
 		'activate' => 	'n(p[:~9&g kdJ220Dl}[lK;/>,bSKoqPQjI@(DnID*^i8@OkDn',
 		'reset' => 		'lJ79K0K@@_dj;S"kMd[=+-8JnmaKAi2oDWp@oi2\"dSMWDS;aJ',
 	),
 
 	'session' => 604800, // in seconds. 604800 = 7 days, 1209600 = 14 days,
+	
 	'minpasslength' => 8, // minimum password length
-	'activation' => true, // require new users to click on the activation link
-
+	
+	'activation' => false, // require new users to click on the activation link
+	
+	'passwordcost' => 10, // password strength (4 to 31; each increment means that the password hashing is twice as expensive), default 10
 
 	'template_titles' => array(
 		'activate' => 'Activate your account',
@@ -43,9 +45,9 @@ $oaconfig = array(
 <p>Thanks,</p>
 <p>The {{app_name}} Team</p>',
 
-		'activate' => '<p>Please confirm your account by clicking <a href="{{url}}/?oa=activate&hash={{hash}}">here</a>.</p>',
+		'activate' => '<p>Please confirm your account by clicking <a href="{{url}}/?oa=activate&token={{token}}">here</a>.</p>',
 
-		'forgot' => '<p>Please reset your password by clicking <a href="{{url}}/?oa=reset&hash={{hash}}">here</a>.</p>',
+		'forgot' => '<p>Please reset your password by clicking <a href="{{url}}/?oa=reset&id={{id}}&token={{token}}">here</a>.</p>',
 
 	),
 

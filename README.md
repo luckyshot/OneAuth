@@ -1,25 +1,32 @@
-# [OneAuth](https://github.com/luckyshot/OneAuth) <br>PHP User Authentication Class Library with UAC features
+# [OneAuth](https://github.com/luckyshot/OneAuth) <br>PHP User Authentication Class with UAC features
 
-OneAuth is a **secure** and **minimal** boilerplate PHP User Authentication System developed to provide essential functionality to manage user authentication on websites, ready to use and to build upon your REST server, use it in a framework like Limonade or any other project.
+OneAuth is a **secure** and **minimal** boilerplate PHP User Authentication System developed to provide essential functionality to manage user authentication on websites, ready to use and to build upon your web app, project, REST server, use it in a framework like Limonade or anything else.
 
 * **Minimal**: OneAuth is coded to have the essential features, nothing more
-* **Secure**: Passwords are salted and encrypted in SHA-1, users keep authenticated through a cookie instead of a session file (more secure)
-* **Small**: Two PHP classes and one MySQL database
-* **Scalable**: You can add new fields, integrate social media networks and build upon very easily
+* **Secure**: Passwords are salted locally and globally and encrypted using the best PHP supported algorythm, users are authenticated through a cookie instead of a session file (increased security) and it is linked to the device's IP address
+* **Small**: OneAuth is two PHP classes and one MySQL table
+* **Scalable**: You can add new fields, integrate with other login methods (such as social media networks) and build new functionalities very easily
+
 
 
 ## Features
 
-- Register new account
 - Activate account through email link (optional)
-- Edit account details (including password reprompt)
-- Login/Logout
+- Edit account details (including old password reprompt)
 - Account deletion (removes identifiable information but keeps the user for historical reasons)
-- Forgot/Reset password (user receives email)
-- Flags to enable UAC (User Access Lists), user levels, memberships or any other user categorization
-- Secure salting and SHA-1 encryption of passwords
-- Customizable session length
-- Uses PDO named parameters with a built-in debugging class (see <code>db.php</code>)
+- Forgot password (user receives email with reset link)
+- Flags to enable UAC (User Access Lists): great for admin levels, memberships or any other user categorization
+- Industry standard secure local+global salting encryption of passwords and tokens
+- Customizable session length, password encryption strength, salts...
+- MySQL uses PDO named parameters with a built-in debugging class
+- Comprehensible error messages to make debugging easier
+
+
+## Requirements
+
+- PHP 5.5+ (due to <code>password_hash()</code>, use <code>crypt()</code> instead for 5.3.7+ compatibility, see below)
+- MySQL
+
 
 
 ## Setup
@@ -27,17 +34,19 @@ OneAuth is a **secure** and **minimal** boilerplate PHP User Authentication Syst
 1. Copy this into your files to initialize OneAuth:
 <pre>require_once('config.php');
 require_once('oneauth.php');
-
 $oa = new OneAuth($oaconfig);</pre>
 
 2. Modify <code>config.php</code> with your database details and change any other settings such as the hashes and project name
 
-3. Check <code>index.php</code> for usage examples
+3. Open <code>index.php</code> for usage examples ready to copy-paste
+
+4. Delete <code>index.php</code> once done!
 
 
-## API
 
-Methods to work with users (full documentation in the code):
+## Class methods overview
+
+For full documentation see the code at <code>oneauth.php</code>, it is full of comments and very easy to understand.
 
 ###### Account
 
@@ -47,15 +56,15 @@ Methods to work with users (full documentation in the code):
 - <code>$oa->edit()</code>
 - <code>$oa->delete()</code>
 
+###### Password
+
+- <code>$oa->forgot()</code>
+- <code>$oa->reset()</code>
+
 ###### Session
 
 - <code>$oa->login()</code>
 - <code>$oa->logout()</code>
-
-###### Password
-
-- <code>$oa->forgotpass()</code>
-- <code>$oa->resetpass()</code>
 
 ###### Flags
 
@@ -74,9 +83,8 @@ Flags are letters that can be used for User Access Control, user levels, account
 
 ## Email templates
 
-<code>forgot</code>: 'Here is a link to reset your password'
-
-<code>activate</code>: 	'Thanks for registering, please activate your account'
+- <code>forgot</code> (Here is a link to reset your password)
+- <code>activate</code>	(Thanks for registering, please activate your account)
 
 
 
@@ -92,14 +100,22 @@ Flags are letters that can be used for User Access Control, user levels, account
 * `token` (char40)
 * `token_expiry` (datetime)
 
+To debug MySQL queries replace <code>new DB</code> with <code>new DBDebug</code> in <code>oneauth.php</code>, this will return the formed query without running it so you can analize it.
 
+
+
+### Salting and hashing
+
+- Passwords: <code>password_hash( globalSalt + password, PASSWORD_DEFAULT )</code>
+- Session token: <code>sha1( globalSalt + IpAddress + $this->randomchars() )</code>
+- Reset password token: <code>sha1( globalSalt + userId + $this->randomchars() )</code>
 
 
 ## TODO
 
-- Limit failed attempts (in login and in reset)
-- Resend activation link
-
+- *Security* Add password cost method so each project can adjust cost accordingly ([code|http://php.net/manual/en/function.password-hash.php#example-923])
+- *Security* Limit failed attempts (in login and in reset)
+- *Feature* Minimal user management admin dashboard
 
 
 
@@ -107,50 +123,69 @@ Flags are letters that can be used for User Access Control, user levels, account
 
 ### Register
 
-- [:+1:] Wrong email fails
-- [:+1:] If email already exists then cannot re-register
-- [:+1:] Missmatching passwords fails
-- [:+1:] Creates MySQL row with all fields
-- [FAIL] If activation = true then flag = i
-- [ OK ] If activation = true then email is sent
-- [ OK ] Warn if password is too short
+- :white_check_mark: Wrong email fails
+- :white_check_mark: If email already exists then cannot re-register
+- :white_check_mark: Missmatching passwords fails
+- :white_check_mark: If password is too short fails
+- :white_check_mark: Creates MySQL row with all fields
+- :white_check_mark: If activation = true then flag = i
+- :white_check_mark: If activation = true then email is sent
+- :white_check_mark: If activation = false then no email, no flag and login automatically
 
 ### Activate
 
-- [ OK ] Flag i is removed from account
+- :white_check_mark: Flag <code>i</code> is removed from account
 
 ### Login
 
-- [:+1:] Checks email and pass match
-- [:+1:] Gets user info
+- :white_check_mark: Checks email and pass match
+- :white_check_mark: SQL injection secure
+- [  ] Case-sensitive query
+- :white_check_mark: Gets user info
 - [  ] Checks if needs activation
-- [:+1:] Generates new token
-- [FAIL] New token is stored in cookie
-- [FAIL] New token is stored in DB
+- :white_check_mark: Generates new token
+- :x: New token is stored in cookie
+- :x: New token is stored in DB
 
 ### Forgot
 
-- [:+1:] Detects email not registered
-- [:+1:] Creates reset hash
-- [:+1:] Updates token in DB with hash
+- :white_check_mark: Detects email not registered
+- :white_check_mark: Creates reset hash
+- :white_check_mark: Updates token in DB with hash
 - [  ] Sends reset email
 
 ### Reset password
 
-- [  ] Old password is requested and it is correct
+- [  ] Old password is requested and verified
+- [  ] New password is set
+- [  ] Token is refreshed so relogin is necessary
 
 ### Edit account
 
-- [  ] 
+- [  ] ...
 
 ### Delete account
 
-- [  ] 
+- [  ] Personal information is removed
+- [  ] Flag <code>d</code> is added to user
+- [  ] Password and token are randomised
 
 ### Logout
 
-- [  ] Cookies are deleted
-- [  ] token_expiry is set to past
+- :white_check_mark: Cookies are deleted
+- [  ] <code>token_expiry</code> is set to past
+
+
+
+## PHP 5.3.7+ Compatibility
+
+Since OneAuth uses <code>password_hash()</code> it needs PHP 5.5+ to work, for those still using 5.3.7+ versions here is the code (<a href="http://php.net/manual/en/function.password-hash.php#113490">more info</a>):
+
+<pre>$salt = mcrypt_create_iv(22, MCRYPT_DEV_URANDOM);
+$salt = base64_encode($salt);
+$salt = str_replace('+', '.', $salt);
+$hash = crypt('rasmuslerdorf', '$2y$10$'.$salt.'$');</pre>
+
 
 
 ## License

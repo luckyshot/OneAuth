@@ -43,7 +43,7 @@
 
 class OneAuth {
 
-	private $version = 	'0.1.4';
+	private $version = 	'0.2.0';
 	private $user = false;
 	private $config = array();
 
@@ -64,6 +64,7 @@ class OneAuth {
 	 */
 	public function user( $id = '' ) {
 
+		// getting info from someone else
 		if (is_numeric( $id )) {
 			$q = "SELECT * FROM ".$this->config['mysql']['table']." WHERE id = :id LIMIT 1";
 			$user = $this->db->query($q)
@@ -73,13 +74,15 @@ class OneAuth {
 		// if no ID specified then current user
 		}else{
 
+			// if it has already been searched this instance
 			if ( !$this->user ) {
-
+				// if user has no cookie then he's logged out
 				if (!$_COOKIE['oa']) { return false; }
 
+				// try and match his token in DB
 				$q = "SELECT * FROM ".$this->config['mysql']['table']." WHERE token = :token LIMIT 1;";
 				$this->user = $this->db->query($q)
-					->bind(':token', sha1($this->config['hash']['token'].$_COOKIE['oa']) )
+					->bind(':token', sha1( $this->config['salt']['token'] . $_SERVER['REMOTE_ADDR'] . $_COOKIE['oa'] ) )
 					->single();
 			}
 
@@ -87,7 +90,7 @@ class OneAuth {
 		}
 
 		// if current user and token is old then logout user
-		if ( !$id && $user['token_expiry'] < time() ) {
+		if ( !$id && strtotime($user['token_expiry']) < time() ) {
 			$this->logout();
 			return false;
 
@@ -121,12 +124,12 @@ class OneAuth {
 		if ( strlen($data['password']) < $this->config['minpasslength'] ) { return array('error'=>'Password is too short'); }
 
 		// Salt password before storing it in the DB
-		$data['password'] = sha1( $this->config['hash']['password'] . $data['password'] );
+		$data['password'] = password_hash( $this->config['salt']['password'].$data['password'], PASSWORD_DEFAULT );
 
-		// hash to use in the activation link or just to have something in there
-		$data['hash'] = sha1( $this->config['hash']['token'].$this->randomchars() );
+		// token to use in the activation link or just to have something in there
+		$data['token'] = $this->randomchars();
 
-		$insertResponse = $this->db->query("INSERT INTO `".$this->config['mysql']['table']."` SET
+		$insertResponse = $this->db->query("INSERT INTO ".$this->config['mysql']['table']." SET
 				id = null,
 				email = :email,
 				password = :password,
@@ -142,7 +145,7 @@ class OneAuth {
 			->bind(':date_seen', date('Y-m-d H:i:s'))
 			->bind(':ip', $_SERVER['REMOTE_ADDR'])
 			->bind(':flags', ($this->config['activation']) ? 'i' : '' ) // if activation required it will inactivate account
-			->bind(':token', $data['hash'] )
+			->bind(':token', sha1( $this->config['salt']['activate'].$data['token'] ) )
 			->bind(':token_expiry', date('Y-m-d H:i:s', time() + $this->config['session']) )
 			->insert();
 
@@ -152,7 +155,7 @@ class OneAuth {
 
 			// if activation not needed then login automatically, otherwise send email
 			if ( !$this->config['activation'] ) {
-				$this->login( $data['email'], $data['password2'] );
+				$this->login( array('email'=>$data['email'], 'password'=>$data['password2']) );
 				unset($data['password2']);
 			}else{
 				$this->send_email('activate', $data, $data['email']);
@@ -179,12 +182,12 @@ class OneAuth {
 	 * activate user account
 	 * Returns true or false
 	*/
-	public function activate( $hash ) {
+	public function activate( $token ) {
 
-		// find hash in DB
+		// find token in DB
 		$q = "SELECT * FROM ".$this->config['mysql']['table']." WHERE token = :token LIMIT 1;";
 		$user = $this->db->query($q)
-			->bind(':token', $hash )
+			->bind(':token', sha1( $this->config['salt']['activate'] . $token ) )
 			->single();
 
 		// remove inactive flag
@@ -203,7 +206,7 @@ class OneAuth {
 			}
 
 		}else{
-			return array( 'error'=>'User not found, invalid activation hash' );
+			return array( 'error'=>'User not found, invalid activation token' );
 		}
 	}
 
@@ -222,16 +225,15 @@ class OneAuth {
 
 		if ( !$id ) {
 			// check old password is correct
-			$q = "SELECT * FROM ".$this->config['mysql']['table']." WHERE
-				password = :password AND 
-				id = :id
-				LIMIT 1;";
+			$q = "SELECT * FROM ".$this->config['mysql']['table']." WHERE id = :id LIMIT 1;";
 			$correctPass = $this->db->query($q)
-				->bind(':password', sha1( $this->config['hash']['password'] . $data['passwordold'] ) )
 				->bind(':id', $this->user['id'] )
 				->single();
 			if ( !$correctPass ) {
-				return array('error' => 'incorrect password');			
+				return array('error' => 'User not found');
+			}
+			if ( !password_verify( $this->config['salt']['password'].$data['passwordold'], $correctPass['password'] ) ) {
+				return array('error' => 'Old password doesn\'t match');
 			}
 		}
 
@@ -245,12 +247,18 @@ class OneAuth {
 		}
 
 		// update fields
-		$updateFields = $this->db->query("UPDATE ".$this->config['mysql']['table']." SET
-			email = :email,
-			password = ':password'
-			WHERE id = :id LIMIT 1;")
+
+		$q = "UPDATE ".$this->config['mysql']['table']." SET email = :email ";
+
+		// password update only when changed
+		if ( strlen($data['passwordnew'])>0 ) {
+			$q .= " , password = ':password' ";
+		}
+		$q .= " WHERE id = :id LIMIT 1;";
+
+		$updateFields = $this->db->query( $q )
 		->bind(':email', $data['email'] )
-		->bind(':password', sha1( $this->config['hash']['password'] . $password ) )
+		->bind(':password', password_hash( $this->config['salt']['password'].$password, PASSWORD_DEFAULT ) )
 		->bind(':id', $user['id'] )
 		->execute();
 
@@ -279,7 +287,7 @@ class OneAuth {
 				flags = 'd',
 				token = ':token'
 				WHERE id = :id LIMIT 1;")
-			->bind(':password', sha1( $this->randomchars()) )
+			->bind(':password', password_hash( $this->randomchars(), PASSWORD_DEFAULT ) )
 			->bind(':date_seen', date('Y-m-d H:i:s'))
 			->bind(':ip', $_SERVER['REMOTE_ADDR'])
 			->bind(':token', sha1( $this->randomchars()) )
@@ -297,15 +305,16 @@ class OneAuth {
 	/**
 
 	 * forgot
-	 * returns a reset hash that allows to change the password of the current account
+	 * returns a reset token that allows to change the password of the current account
 	 * you will probably want to send this link by email
 	*/
 	public function forgot( $email ) {
 
-		if ( !$this->email_exists( $email ) ) { return array('error' => "Email not registered"); }
+		$user = $this->email_exists( $email );
+		if ( !$user ) { return array('error' => "Email not registered"); }
 
-		// create a hash
-		$hash = sha1( $this->config->hash['reset'] . $user['id'] . $user['password'] );
+		// create a token
+		$token = sha1( $this->config['token']['reset'] . $user['id'] . $this->randomchars() );
 
 		// set it as the token
 		// this way logged in user will be kicked out but will be able to login again
@@ -313,15 +322,15 @@ class OneAuth {
 		$updatesToken = $this->db->query("UPDATE ".$this->config['mysql']['table']." SET
 				token = :token
 				WHERE email = :email LIMIT 1;")
-			->bind(':token', $hash)
+			->bind(':token', $token)
 			->bind(':email', $email)
 			->execute();
 
 		if ( $updatesToken ) {
 			// now send email to user with reset link
-			return $this->send_email( 'forgot', array('hash'=>$hash), $email );
+			return $this->send_email( 'forgot', array('id'=>$user['id'], 'token'=>$token), $email );
 		}else{
-			return array('error' => "Could not update reset hash");
+			return array('error' => "Could not update reset token");
 		}
 	}
 
@@ -332,30 +341,30 @@ class OneAuth {
 	 * reset
 	 * Changes password to new one
 	*/
-	public function reset ($hash, $pass, $pass2) {
+	public function reset ($userid, $token, $password, $password2) {
 
-		if ($pass !== $pass2) {
+		if ($password !== $password2) {
 			return array('error'=> 'Passwords do not match');
 		}
 
-		// check hash matches one in the DB
+		// check token matches one in the DB
 		$q = "SELECT * FROM ".$this->config['mysql']['table']." WHERE
 			token = :token
 			LIMIT 1;";
 		$this->user = $this->db->query($q)
-			->bind(':token', $hash )
+			->bind(':token', sha1( $this->config['salt']['reset'] . $userid . $token ) )
 			->single();
 
-		if (!$this->user) { return array('error' => 'incorrect hash'); }
+		if (!$this->user) { return array('error' => 'Incorrect token'); }
 
 		// reset password of user to new one
 		$result = $this->db->query("UPDATE ".$this->config['mysql']['table']." SET
 			password = :password
 			WHERE id = :id LIMIT 1;")
-		->bind(':password', sha1( $this->config['hash']['password'] . $pass ) )
+		->bind(':password', password_hash( $this->config['salt']['password'].$password, PASSWORD_DEFAULT ) )
 		->bind(':id', $this->user['id'])
 		->execute();
-		
+
 		if ( $result ) {
 			return true;
 		}else{
@@ -373,46 +382,52 @@ class OneAuth {
 	 *
 	*/
 	public function login( $data ) {
+
+		if ( strlen($data['email']) < 5) { return array('error' => "Email too short"); }
+		if ( strlen($data['password']) < $this->config['minpasslength']) { return array('error' => "Password too short"); }
+
 		if ( !$this->email_exists( $data['email'] ) ) { return array('error' => "Email not registered"); }
 
 		$q = "SELECT * FROM ".$this->config['mysql']['table']." WHERE
-			email = :email AND
-			password = :password AND
-			flags NOT LIKE '%d%'
+			email = :email
 			LIMIT 1;";
 		$user = $this->db->query($q)
 			->bind(':email', $data['email'] )
-			->bind(':password', sha1($this->config['hash']['password'].$data['password']) )
 			->single();
 
 		if (!$user) {
-			return array('error' => 'login failed');
+			return array('error' => 'Email not found');
 		}
 
 		// is deleted account?
 		if ($this->hasflag('d')) {
-			return array('error' => 'login ok but account deleted');
-		}		
+			return array('error' => 'Login OK but account deleted');
+		}
 
 		// needs activation?
 		if ($this->config['activation'] && $this->hasflag('i')) {
-			return array('error' => 'login ok but needs activation first');
+			return array('error' => 'Login OK but not activated');
+		}
+
+		// wrong password?
+		if ( !password_verify( $this->config['salt']['password'].$data['password'], $user['password'] ) ) {
+			return array('error' => 'Wrong password');
 		}
 
 		// everything ok
 		$this->user = $user;
 
 		// set token in cookie
-		$this->user['token'] = sha1( $this->randomchars() );
-		setcookie( 'oa', $this->user['token'], (time() + $this->config['session']) );
+		$this->user['token'] = $this->randomchars();
 		$_COOKIE['oa'] = $this->user['token'];
+		setcookie( 'oa', $this->user['token'], (time() + $this->config['session']) );
 
 		// set token in DB
 		$result = $this->db->query("UPDATE ".$this->config['mysql']['table']." SET
 			token = :token
-			WHERE id = :id 
+			WHERE id = :id
 			LIMIT 1;")
-		->bind(':token', $this->user['token'] )
+		->bind(':token', sha1( $this->config['salt']['token'] . $_SERVER['REMOTE_ADDR'] . $this->user['token'] ) )
 		->bind(':id', $this->user['id'])
 		->execute();
 
@@ -434,7 +449,7 @@ class OneAuth {
 	*/
 	public function logout() {
 		$_COOKIE['oa'] = NULL;
-		setcookie('oa', '', time()-3600*24*365);
+		setcookie('oa', 'good bye!', time()-3600*24*365);
 		unset($this->user);
 		return true;
 	}
@@ -495,7 +510,7 @@ class OneAuth {
 			ip = :ip
 			WHERE id = :id LIMIT 1;")
 		->bind(':date_seen', date('Y-m-d H:i:s'))
-		->bind(':token_expiry', date('Y-m-d H:i:s', time() + $this->config['session']) )
+		->bind(':token_expiry', date('Y-m-d H:i:s', (time() + $this->config['session'])) )
 		->bind(':ip', $_SERVER['REMOTE_ADDR'])
 		->bind(':id', $this->user['id'])
 		->execute();
@@ -531,9 +546,9 @@ class OneAuth {
 	private function send_email( $template, $data ) {
 
 
-		$html = 
-			$this->config['templates']['header'] . 
-			$this->config['templates'][ $template ] . 
+		$html =
+			$this->config['templates']['header'] .
+			$this->config['templates'][ $template ] .
 			$this->config['templates']['footer'];
 
 		// Put all vars together
@@ -556,9 +571,9 @@ class OneAuth {
 								"MIME-Version: 1.0\r\n".
 								"Content-Type: text/html; charset=utf-8\r\n";
 
-var_dump($mailer);
-var_dump(mail( $mailer['toEmail'], $mailer['subject'], $mailer['body'], $mailer['headers']));
-		return 123;
+		$sendmail = mail( $mailer['toEmail'], $mailer['subject'], $mailer['body'], $mailer['headers']);
+
+		return $sendmail;
 	}
 
 
@@ -586,7 +601,7 @@ var_dump(mail( $mailer['toEmail'], $mailer['subject'], $mailer['body'], $mailer[
 
 	 *
 	*/
-	private function randomchars($length = 50) {
+	private function randomchars( $length = 50 ) {
 		$pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 		return substr(str_shuffle(str_repeat($pool, 5)), 0, $length);
 	}

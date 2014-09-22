@@ -1,15 +1,17 @@
 <?php
 
 // Load required files
-require_once('config.php');
-require_once('oneauth.php');
+require_once( 'config.php' );
+require_once( 'oneauth.php' );
 
 // Initialize class
-$oa = new OneAuth($oaconfig);
+$oa = new OneAuth( $oaconfig );
 
 
 
-// Routing
+/**
+ * ROUTER
+ */
 $action = $_REQUEST['oa'];
 
 // Register
@@ -24,17 +26,17 @@ if ($action=='register') {
 	if ($user['error']) {
 		$msg = $user['error'];
 	}else{
-		$msg = 'Welcome '.$user['email'].'!';
+		$msg = 'Registration OK';
 	}
 
 // Activate account
 }else if ($action=='activate') {
-	$activation = $oa->activate( $_REQUEST['hash'] );
+	$activation = $oa->activate( $_REQUEST['token'] );
 
 	if ($activation['error']) {
 		$msg = $activation['error'];
 	}else{
-		$msg = 'Account activated!';
+		$msg = 'Account activated OK';
 	}
 
 // Login
@@ -48,7 +50,7 @@ if ($action=='register') {
 	if ($user['error']) {
 		$msg = $user['error'];
 	}else{
-		$msg = 'Hello '.$user['email'].'!';
+		$msg = 'Login OK';
 	}
 
 // Forgot password
@@ -61,13 +63,15 @@ if ($action=='register') {
 	if ($forgot['error']) {
 		$msg = $forgot['error'];
 	}else{
-		$msg = 'No problem! We\'ve sent you an email';
+		$msg = 'Email sent OK';
 	}
 
 // Reset password
-}else if ($action=='reset') {
+}else if ($action=='reset' && isset($_POST['password'])) {
+
 	$reset = $oa->reset(
-		$_POST['hash'],
+		$_POST['id'],
+		$_POST['token'],
 		$_POST['password'],
 		$_POST['password2']
 	);
@@ -75,19 +79,29 @@ if ($action=='register') {
 	if ($reset['error']) {
 		$msg = $reset['error'];
 	}else{
-		$msg = 'Your password has been reset successfully, you can now login';
+		$msg = 'Password reset OK';
 	}
 
 
 }else if ($action=='edit') {
-	$oa->edit(array(
-		// TODO
+	$edit = $oa->edit(array(
+		'email' => $_POST['email'],
+		'passwordold' => $_POST['passwordold'],
+		'passwordnew' => $_POST['passwordnew'],
+		'passwordnew2' => $_POST['passwordnew2'],
 	));
+
+	if ($edit['error']) {
+		$msg = $edit['error'];
+	}else{
+		$msg = 'Edit OK';
+	}
+
 
 }else if ($action=='logout') {
 	$oa->logout();
 
-	$msg = 'you are now logged out';
+	$msg = 'Logged out OK';
 
 }else if ($action=='delete') {
 
@@ -96,7 +110,7 @@ if ($action=='register') {
 	if ($delete['error']) {
 		$msg = $delete['error'];
 	}else{
-		$msg = 'Your account has been deleted successfully, good bye!';
+		$msg = 'Account deleted OK';
 	}
 
 
@@ -105,6 +119,11 @@ if ($action=='register') {
 
 // Load user
 $user = $oa->user();
+
+
+
+
+
 
 ?><!DOCTYPE html>
 <html lang="en">
@@ -120,77 +139,104 @@ $user = $oa->user();
 
 <h1>OneAuth Examples</h1>
 
-<?php if ($msg) { echo '<h2><center>'.$msg.'</center></h2>'; } ?>
 
-<?php if ( $user ) { ?>
+<?php if ($msg) { echo '<div class="alert alert-info">'.$msg.'</div>'; } ?>
 
-	<h3>User data</h3>
-	<?php var_dump( $user ); ?>
 
-	<h3>Logout</h3>
-	<p><a href="?oa=logout">Logout</a></p>
-
-	<h3>Edit account</h3>
-	<form action="">
-		<input type="hidden" name="oa" value="edit">
-		<input type="text" name="email" value="" placeholder="Email">
-		<input type="password" name="passwordnew" placeholder="Leave empty to keep current password">
-		<input type="password" name="passwordnew2" placeholder="">
-
-		<input type="password" name="passwordold" placeholder="Current password">
-		<input type="submit" value="Save">
-	</form>
-
-	<h3>Delete account</h3>
-	<p><small><a href="?oa=delete" style="color:#c00">Delete account</a></small></p>
-
+<?php if ($user) { ?>
+	<p>Hello <strong><?php echo $user['email']; ?></strong>! How are you doing?</p>
 <?php }else{ ?>
-
-	<p>Not logged in.</p>
-
-	<h3>Register account</h3>
-	<form action="" method="post">
-		<input type="hidden" name="oa" value="register">
-		<input type="text"   name="email" placeholder="Email">
-		<input type="password" name="password" placeholder="Password">
-		<input type="password" name="password2" placeholder="Repeat password">
-		<input type="submit" value="Register">
-	</form>
-
-	<h3>Activate</h3>
-	<form action="" method="get">
-		<input type="hidden" name="oa" value="activate">
-		<input type="text"   name="hash" placeholder="Activation code">
-		<input type="submit" value="Activate">
-	</form>
-
-	<h3>Login</h3>
-	<form action="" method="post">
-		<input type="hidden" name="oa" value="login">
-		<input type="email"  name="email" placeholder="Email">
-		<input type="password" name="password" placeholder="Password">
-		<input type="submit" value="Login">
-	</form>
-
-	<h3>Forgot password</h3>
-
-	<form action="" method="post">
-		<input type="hidden" name="oa" value="forgot">
-		<input type="email"  name="email" placeholder="Email">
-		<input type="submit" value="Forgot password">
-	</form>
-
-	<h3>Reset password</h3>
-
-	<form action="" method="post">
-		<input type="hidden" name="oa" value="reset">
-		<input type="hidden" name="hash">
-		<input type="password" name="password" placeholder="New password">
-		<input type="password" name="password2" placeholder="Repeat new password">
-		<input type="submit" value="Reset password">
-	</form>
-
+	<p>You are logged out.</p>
 <?php } ?>
+
+
+
+
+<hr>
+
+
+
+
+
+<h2>Logged out forms</h2>
+
+<h3>Register account</h3>
+<form action="" method="post">
+	<input type="hidden" name="oa" value="register">
+	<input type="text"   name="email" placeholder="Email">
+	<input type="password" name="password" placeholder="Password">
+	<input type="password" name="password2" placeholder="Repeat password">
+	<input type="submit" value="Register">
+</form>
+
+<h3>Activate</h3>
+<form action="" method="get">
+	<input type="hidden" name="oa" value="activate">
+	<input type="text"   name="token" placeholder="Activation code">
+	<input type="submit" value="Activate">
+</form>
+
+<h3>Login</h3>
+<form action="" method="post">
+	<input type="hidden" name="oa" value="login">
+	<input type="email"  name="email" placeholder="Email">
+	<input type="password" name="password" placeholder="Password">
+	<input type="submit" value="Login">
+</form>
+
+<h3>Forgot password</h3>
+
+<form action="" method="post">
+	<input type="hidden" name="oa" value="forgot">
+	<input type="email"  name="email" placeholder="Email">
+	<input type="submit" value="Forgot password">
+</form>
+
+<h3>Reset password</h3>
+<form action="" method="post">
+	<input type="hidden" name="oa" value="reset">
+	<input type="hidden" name="id" value="<?php echo $_POST['id']; ?>">
+	<input type="hidden" name="token" value="<?php echo $_POST['token']; ?>">
+	<input type="password" name="password" placeholder="New password">
+	<input type="password" name="password2" placeholder="Repeat new password">
+	<input type="submit" value="Save new password">
+</form>
+
+
+
+
+<hr>
+
+
+
+
+
+<h2>Logged in forms</h2>
+
+<h3>Logout</h3>
+<p><a href="?oa=logout">Logout</a></p>
+
+<h3>Edit account</h3>
+<form action="" method="post">
+	<input type="hidden" name="oa" value="edit">
+	<input type="text" name="email" value="" placeholder="Email">
+	<input type="password" name="passwordnew" placeholder="Leave empty to keep current password">
+	<input type="password" name="passwordnew2" placeholder="">
+
+	<input type="password" name="passwordold" placeholder="Current password">
+	<input type="submit" value="Save">
+</form>
+
+<h3>Delete account</h3>
+<form action="" method="post">
+	<input type="hidden" name="oa" value="delete">
+	<input type="submit" style="color:#c00;font-size:90%;" value="Delete account">
+</form>
+
+<h3>User data</h3>
+<pre><?php var_dump( $user ); ?></pre>
+
+
 
 
 
