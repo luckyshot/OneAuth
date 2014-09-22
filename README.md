@@ -27,7 +27,6 @@ OneAuth is a **secure** and **minimal** boilerplate PHP User Authentication Syst
 1. Copy this into your files to initialize OneAuth:
 <pre>require_once('config.php');
 require_once('oneauth.php');
-
 $oa = new OneAuth($oaconfig);</pre>
 
 2. Modify <code>config.php</code> with your database details and change any other settings such as the hashes and project name
@@ -77,8 +76,8 @@ Flags are letters that can be used for User Access Control, user levels, account
 
 ## Email templates
 
-- <code>forgot</code>: 'Here is a link to reset your password'
-- <code>activate</code>: 	'Thanks for registering, please activate your account'
+- <code>forgot</code> (Here is a link to reset your password)
+- <code>activate</code>	(Thanks for registering, please activate your account)
 
 
 
