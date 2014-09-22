@@ -29,6 +29,11 @@ OneAuth is a **secure** and **minimal** boilerplate PHP User Authentication Syst
 
 
 
+## Requirements
+
+- PHP 5.5+ (due to <code>password_hash()</code>, use <code>crypt()</code> instead for 5.3.7+ compatibility, see below)
+- MySQL
+
 ## Setup
 
 1. Copy this into your files to initialize OneAuth:
@@ -39,6 +44,8 @@ $oa = new OneAuth($oaconfig);</pre>
 2. Modify <code>config.php</code> with your database details and change any other settings such as the hashes and project name
 
 3. Open <code>index.php</code> for usage examples ready to copy-paste
+
+4. Delete <code>index.php</code> once done!
 
 4. Delete <code>index.php</code> once done!
 
@@ -65,6 +72,11 @@ For full documentation see the code at <code>oneauth.php</code>, it is full of c
 
 - <code>$oa->login()</code>
 - <code>$oa->logout()</code>
+
+###### Password
+
+- <code>$oa->forgot()</code>
+- <code>$oa->reset()</code>
 
 ###### Flags
 
@@ -111,11 +123,12 @@ To debug MySQL queries replace <code>new DB</code> with <code>new DBDebug</code>
 - Reset password token: <code>sha1( globalSalt + userId + $this->randomchars() )</code>
 
 
+
 ## TODO
 
-- *Security* Add password cost method so each project can adjust cost accordingly ([code|http://php.net/manual/en/function.password-hash.php#example-923])
-- *Security* Limit failed attempts (in login and in reset)
-- *Feature* Minimal user management admin dashboard
+- **Security** Add password cost method so each project can adjust cost accordingly ([code|http://php.net/manual/en/function.password-hash.php#example-923])
+- **Security** Limit failed attempts (in login and in reset)
+- **Feature** Minimal user management admin dashboard
 
 
 
@@ -187,6 +200,15 @@ $salt = str_replace('+', '.', $salt);
 $hash = crypt('rasmuslerdorf', '$2y$10$'.$salt.'$');</pre>
 
 
+
+## PHP 5.3.7+ Compatibility
+
+Since OneAuth uses <code>password_hash()</code> it needs PHP 5.5+ to work, for those still using 5.3.7+ versions here is the code ([more info|http://php.net/manual/en/function.password-hash.php#113490]):
+
+<pre>$salt = mcrypt_create_iv(22, MCRYPT_DEV_URANDOM);
+$salt = base64_encode($salt);
+$salt = str_replace('+', '.', $salt);
+$hash = crypt('rasmuslerdorf', '$2y$10$'.$salt.'$');</pre>
 
 ## License
 
