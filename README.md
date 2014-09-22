@@ -153,40 +153,40 @@ To debug MySQL queries replace <code>new DB</code> with <code>new DBDebug</code>
 
 - :white_check_mark: Checks email and pass match
 - :white_check_mark: SQL injection secure
-- [  ] Case-sensitive query
+- :x: Case-sensitive query
 - :white_check_mark: Gets user info
-- [  ] Checks if needs activation
+- :x: Checks if needs activation
 - :white_check_mark: Generates new token
-- :x: New token is stored in cookie
-- :x: New token is stored in DB
+- :white_check_mark: New token is stored in cookie
+- :white_check_mark: New token is stored in DB
 
 ### Forgot
 
 - :white_check_mark: Detects email not registered
 - :white_check_mark: Creates reset hash
 - :white_check_mark: Updates token in DB with hash
-- [  ] Sends reset email
+- :x: Sends reset email
 
 ### Reset password
 
-- [  ] Old password is requested and verified
-- [  ] New password is set
-- [  ] Token is refreshed so relogin is necessary
+- :x: Old password is requested and verified
+- :x: New password is set
+- :x: Token is refreshed so relogin is necessary
 
 ### Edit account
 
-- [  ] ...
+- :x: ...
 
 ### Delete account
 
-- [  ] Personal information is removed
-- [  ] Flag <code>d</code> is added to user
-- [  ] Password and token are randomised
+- :x: Personal information is removed
+- :x: Flag <code>d</code> is added to user
+- :x: Password and token are randomised
 
 ### Logout
 
 - :white_check_mark: Cookies are deleted
-- [  ] <code>token_expiry</code> is set to past
+- :x: <code>token_expiry</code> is set to past
 
 
 
