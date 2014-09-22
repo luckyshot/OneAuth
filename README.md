@@ -21,6 +21,10 @@ OneAuth is a **secure** and **minimal** boilerplate PHP User Authentication Syst
 - Customizable session length
 - MySQL uses PDO named parameters with a built-in debugging class
 
+## Requirements
+
+- PHP 5.5+ (due to <code>password_hash()</code>, use <code>crypt()</code> instead for 5.3+ compatibility)
+- MySQL
 
 ## Setup
 
@@ -98,7 +102,7 @@ To debug MySQL queries replace <code>new DB</code> with <code>new DBDebug</code>
 
 ## TODO
 
-- *Security* Update SHA1 to [password_hash()|http://php.net/manual/en/book.password.php]
+- *Security* Update password AND token SHA1 algorythm to [password_hash()|http://php.net/manual/en/book.password.php] or crypt
 - *Security* Individual salt ( globalSalt + individualSalt + password ) [info|http://stackoverflow.com/questions/3897434/password-security-sha1-sha256-or-sha512]
 - *Security* Limit failed attempts (in login and in reset)
 - *Feature* Simple user management dashboard
