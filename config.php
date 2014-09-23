@@ -8,7 +8,6 @@ $oaconfig = array(
 	'app_email' => 'oneauth@example.com',
 
 	'url' => 	'http://localhost/oneauth', // no trailing slash
-	'path' => 	'/Users/xavi/www/OneAuth', // no trailing slash
 
 	'mysql' => array(
 		'server' => 	'localhost',
@@ -19,17 +18,18 @@ $oaconfig = array(
 	),
 
 	'salt' => array(
-		'token' => 		'JBHF62t8bt6twb8stN0&TO977rb^£%@5veYtbUNT@*&@(P9-8m',
-		'activate' => 	'n(p[:~9&g kdJ220Dl}[lK;/>,bSKoqPQjI@(DnID*^i8@OkDn',
-		'reset' => 		'lJ79K0K@@_dj;S"kMd[=+-8JnmaKAi2oDWp@oi2\"dSMWDS;aJ',
+		'password' => 	'Y**;29B}|}8B82laU@bAnUio`|[{)vIeZ/sAM3!8HFZG^5jV~Ss@?G-_U8;<n+8(',
+		'token' => 		']TpWpiZ6rn0DF-}dbNHJ61P09m{a&3NYdlR1Tlknr]G2@r{ 46x-Th{4z]HLHJ.|',
+		'activate' => 	'f`5IPJx]hQ~JrBgBI=b-|Mchq?y7fhgN_LM|!4.UWii6?+ykYse0Ly,85 (s/(|`',
+		'reset' => 		'Yw*<s,sha8$A&Acc=UX)N/=g=)ed/wYjW8o}sl2)Mxplr!-+MRusG$2#a3/.*rFW',
 	),
 
 	'session' => 604800, // in seconds. 604800 = 7 days, 1209600 = 14 days,
-	
+
 	'minpasslength' => 8, // minimum password length
-	
+
 	'activation' => false, // require new users to click on the activation link
-	
+
 	'passwordcost' => 10, // password strength (4 to 31; each increment means that the password hashing is twice as expensive), default 10
 
 	'template_titles' => array(

@@ -82,6 +82,11 @@ if ($action=='register') {
 		$msg = 'Password reset OK';
 	}
 
+// Reset link
+}else if ($action=='reset' && !isset($_POST['password'])) {
+
+	$msg = 'Reset link clicked OK, please type new password';
+
 
 }else if ($action=='edit') {
 	$edit = $oa->edit(array(
@@ -236,8 +241,13 @@ $user = $oa->user();
 <h3>User data</h3>
 <pre><?php var_dump( $user ); ?></pre>
 
-
-
+<h3>Salts</h3>
+<pre>	'salt' => array(
+		'password' => 	'<?php echo $oa->randomchars(64); ?>',
+		'token' => 		'<?php echo $oa->randomchars(64); ?>',
+		'activate' => 	'<?php echo $oa->randomchars(64); ?>',
+		'reset' => 		'<?php echo $oa->randomchars(64); ?>',
+	),</pre>
 
 
 </body>

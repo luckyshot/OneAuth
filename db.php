@@ -20,6 +20,8 @@ $userid = $db->query("INSERT INTO users VALUES (NULL, :name, :date)")
 	->bind(':date', date("Y-m-d H:i:s"))
 	->insert();
 
+UPDATE returns true or false
+
 */
 
 class DB {
@@ -91,7 +93,7 @@ class DB {
 
 class DBdebug {
 	private $q;
-	
+
 	public function query($q) {
 		$this->q = $q;
 		return $this;

@@ -43,7 +43,7 @@
 
 class OneAuth {
 
-	private $version = 	'0.2.0';
+	private $version = 	'0.2.1';
 	private $user = false;
 	private $config = array();
 
@@ -90,7 +90,7 @@ class OneAuth {
 		}
 
 		// if current user and token is old then logout user
-		if ( !$id && strtotime($user['token_expiry']) < time() ) {
+		if ( !$id && $_COOKIE['oa'] && strtotime($user['token_expiry']) < time() ) {
 			$this->logout();
 			return false;
 
@@ -314,21 +314,20 @@ class OneAuth {
 		if ( !$user ) { return array('error' => "Email not registered"); }
 
 		// create a token
-		$token = sha1( $this->config['token']['reset'] . $user['id'] . $this->randomchars() );
+		$user['token'] = $this->randomchars();
 
-		// set it as the token
-		// this way logged in user will be kicked out but will be able to login again
-		// and if he remembers the password the reset link will expire
+		// set it as the token, this way logged in user will be kicked out
+		// and if he remembers the password the reset link will expire automatically
 		$updatesToken = $this->db->query("UPDATE ".$this->config['mysql']['table']." SET
 				token = :token
-				WHERE email = :email LIMIT 1;")
-			->bind(':token', $token)
-			->bind(':email', $email)
+				WHERE id = :id LIMIT 1;")
+			->bind( ':token', sha1( $this->config['salt']['reset'] . $user['id'] . $user['token'] ) )
+			->bind( ':id', $user['id'] )
 			->execute();
 
 		if ( $updatesToken ) {
 			// now send email to user with reset link
-			return $this->send_email( 'forgot', array('id'=>$user['id'], 'token'=>$token), $email );
+			return $this->send_email( 'forgot', array('id'=>$user['id'], 'token'=>$user['token'], 'email'=>$user['email']) );
 		}else{
 			return array('error' => "Could not update reset token");
 		}
@@ -349,10 +348,12 @@ class OneAuth {
 
 		// check token matches one in the DB
 		$q = "SELECT * FROM ".$this->config['mysql']['table']." WHERE
-			token = :token
+			token = :token AND
+			id = :id
 			LIMIT 1;";
 		$this->user = $this->db->query($q)
 			->bind(':token', sha1( $this->config['salt']['reset'] . $userid . $token ) )
+			->bind(':id', $userid )
 			->single();
 
 		if (!$this->user) { return array('error' => 'Incorrect token'); }
@@ -491,8 +492,18 @@ class OneAuth {
 
 
 
+	/**
 
-
+	 * d
+	 * method to debug vars quickly
+	*/
+	private function d( $d ) {
+		echo '
+<pre>';
+		var_dump( $d );
+		echo '</pre><hr>
+';
+	}
 
 
 
@@ -601,8 +612,12 @@ class OneAuth {
 
 	 *
 	*/
-	private function randomchars( $length = 50 ) {
-		$pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	public function randomchars( $length = 50 ) {
+		// TODO: once testing complete, add more safe URL symbols .:-;()[]{}!@
+		$chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+		$special_chars = '!@#$%^&*()';
+		$extra_special_chars = '-_ []{}<>~`+=,.;:/?|';
+		$pool = $chars;
 		return substr(str_shuffle(str_repeat($pool, 5)), 0, $length);
 	}
 

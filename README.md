@@ -36,18 +36,19 @@ OneAuth is a **secure** and **minimal** boilerplate PHP User Authentication Syst
 
 ## Setup
 
-1. Copy this into your files to initialize OneAuth:
+
+1. Modify <code>config.php</code> with your URL, database, salts (Salt generator available at the bottom of <code>index.php</code>), project name and email, session length, email templates, etc.
+
+2. Run <code>dump.sql</code> in your MySQL
+
+3. Copy this into your project to initialize OneAuth:
 <pre>require_once('config.php');
 require_once('oneauth.php');
 $oa = new OneAuth($oaconfig);</pre>
 
-2. Modify <code>config.php</code> with your database details and change any other settings such as the hashes and project name
+4. Open <code>index.php</code> to see usage examples ready to copy-paste into your files
 
-3. Open <code>index.php</code> for usage examples ready to copy-paste
-
-4. Delete <code>index.php</code> once done!
-
-4. Delete <code>index.php</code> once done!
+5. Delete <code>index.php</code>
 
 
 
