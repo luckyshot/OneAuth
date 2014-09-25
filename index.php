@@ -13,6 +13,7 @@ $oa = new OneAuth( $oaconfig );
  * ROUTER
  */
 $action = $_REQUEST['oa'];
+$msgClass = 'alert-success';
 
 // Register
 if ($action=='register') {
@@ -24,6 +25,7 @@ if ($action=='register') {
 	));
 
 	if ($user['error']) {
+		$msgClass = 'alert-danger';
 		$msg = $user['error'];
 	}else{
 		$msg = 'Registration OK';
@@ -34,6 +36,7 @@ if ($action=='register') {
 	$activation = $oa->activate( $_REQUEST['token'] );
 
 	if ($activation['error']) {
+		$msgClass = 'alert-danger';
 		$msg = $activation['error'];
 	}else{
 		$msg = 'Account activated OK';
@@ -48,6 +51,7 @@ if ($action=='register') {
 	));
 
 	if ($user['error']) {
+		$msgClass = 'alert-danger';
 		$msg = $user['error'];
 	}else{
 		$msg = 'Login OK';
@@ -61,6 +65,7 @@ if ($action=='register') {
 	// WARNING: an attacker should never be able to tell if an email exists in the DB,
 	//          always return a message like 'if that email is in the DB we have sent a reset link'
 	if ($forgot['error']) {
+		$msgClass = 'alert-danger';
 		$msg = $forgot['error'];
 	}else{
 		$msg = 'Email sent OK';
@@ -77,6 +82,7 @@ if ($action=='register') {
 	);
 
 	if ($reset['error']) {
+		$msgClass = 'alert-danger';
 		$msg = $reset['error'];
 	}else{
 		$msg = 'Password reset OK';
@@ -97,6 +103,7 @@ if ($action=='register') {
 	));
 
 	if ($edit['error']) {
+		$msgClass = 'alert-danger';
 		$msg = $edit['error'];
 	}else{
 		$msg = 'Edit OK';
@@ -113,6 +120,7 @@ if ($action=='register') {
 	$delete = $oa->delete();
 
 	if ($delete['error']) {
+		$msgClass = 'alert-danger';
 		$msg = $delete['error'];
 	}else{
 		$msg = 'Account deleted OK';
@@ -145,7 +153,7 @@ $user = $oa->user();
 <h1>OneAuth Examples</h1>
 
 
-<?php if ($msg) { echo '<div class="alert alert-info">'.$msg.'</div>'; } ?>
+<?php if ($msg) { echo '<div class="alert '.$msgClass.'">'.$msg.'</div>'; } ?>
 
 
 <?php if ($user) { ?>
@@ -166,7 +174,7 @@ $user = $oa->user();
 <h2>Logged out forms</h2>
 
 <h3>Register account</h3>
-<form action="" method="post">
+<form action="./" method="post">
 	<input type="hidden" name="oa" value="register">
 	<input type="text"   name="email" placeholder="Email">
 	<input type="password" name="password" placeholder="Password">
@@ -175,14 +183,14 @@ $user = $oa->user();
 </form>
 
 <h3>Activate</h3>
-<form action="" method="get">
+<form action="./" method="get">
 	<input type="hidden" name="oa" value="activate">
 	<input type="text"   name="token" placeholder="Activation code">
 	<input type="submit" value="Activate">
 </form>
 
 <h3>Login</h3>
-<form action="" method="post">
+<form action="./" method="post">
 	<input type="hidden" name="oa" value="login">
 	<input type="email"  name="email" placeholder="Email">
 	<input type="password" name="password" placeholder="Password">
@@ -191,17 +199,17 @@ $user = $oa->user();
 
 <h3>Forgot password</h3>
 
-<form action="" method="post">
+<form action="./" method="post">
 	<input type="hidden" name="oa" value="forgot">
 	<input type="email"  name="email" placeholder="Email">
 	<input type="submit" value="Forgot password">
 </form>
 
 <h3>Reset password</h3>
-<form action="" method="post">
+<form action="./" method="post">
 	<input type="hidden" name="oa" value="reset">
-	<input type="hidden" name="id" value="<?php echo $_POST['id']; ?>">
-	<input type="hidden" name="token" value="<?php echo $_POST['token']; ?>">
+	<input type="hidden" name="id" value="<?php echo $_GET['id']; ?>">
+	<input type="hidden" name="token" value="<?php echo $_GET['token']; ?>">
 	<input type="password" name="password" placeholder="New password">
 	<input type="password" name="password2" placeholder="Repeat new password">
 	<input type="submit" value="Save new password">
@@ -222,21 +230,22 @@ $user = $oa->user();
 <p><a href="?oa=logout">Logout</a></p>
 
 <h3>Edit account</h3>
-<form action="" method="post">
+<form action="./" method="post">
 	<input type="hidden" name="oa" value="edit">
-	<input type="text" name="email" value="" placeholder="Email">
-	<input type="password" name="passwordnew" placeholder="Leave empty to keep current password">
-	<input type="password" name="passwordnew2" placeholder="">
+	<input type="text" name="email" value="<?php echo $user['email']; ?>" placeholder="Email">
+	<input type="password" name="passwordnew" placeholder="New password" title="Leave empty to keep current password">
+	<input type="password" name="passwordnew2" placeholder="Repeat new password">
 
 	<input type="password" name="passwordold" placeholder="Current password">
 	<input type="submit" value="Save">
 </form>
 
 <h3>Delete account</h3>
-<form action="" method="post">
+<form action="./" method="post">
 	<input type="hidden" name="oa" value="delete">
 	<input type="submit" style="color:#c00;font-size:90%;" value="Delete account">
 </form>
+
 
 <h3>User data</h3>
 <pre><?php var_dump( $user ); ?></pre>

@@ -29,11 +29,6 @@ OneAuth is a **secure** and **minimal** boilerplate PHP User Authentication Syst
 
 
 
-## Requirements
-
-- PHP 5.5+ (due to <code>password_hash()</code>, use <code>crypt()</code> instead for 5.3.7+ compatibility, see below)
-- MySQL
-
 ## Setup
 
 
@@ -130,64 +125,6 @@ To debug MySQL queries replace <code>new DB</code> with <code>new DBDebug</code>
 - **Security** Add password cost method so each project can adjust cost accordingly ([code|http://php.net/manual/en/function.password-hash.php#example-923])
 - **Security** Limit failed attempts (in login and in reset)
 - **Feature** Minimal user management admin dashboard
-
-
-
-## Test
-
-### Register
-
-- :white_check_mark: Wrong email fails
-- :white_check_mark: If email already exists then cannot re-register
-- :white_check_mark: Missmatching passwords fails
-- :white_check_mark: If password is too short fails
-- :white_check_mark: Creates MySQL row with all fields
-- :white_check_mark: If activation = true then flag = i
-- :white_check_mark: If activation = true then email is sent
-- :white_check_mark: If activation = false then no email, no flag and login automatically
-
-### Activate
-
-- :white_check_mark: Flag <code>i</code> is removed from account
-
-### Login
-
-- :white_check_mark: Checks email and pass match
-- :white_check_mark: SQL injection secure
-- :x: Case-sensitive query
-- :white_check_mark: Gets user info
-- :x: Checks if needs activation
-- :white_check_mark: Generates new token
-- :white_check_mark: New token is stored in cookie
-- :white_check_mark: New token is stored in DB
-
-### Forgot
-
-- :white_check_mark: Detects email not registered
-- :white_check_mark: Creates reset hash
-- :white_check_mark: Updates token in DB with hash
-- :x: Sends reset email
-
-### Reset password
-
-- :x: Old password is requested and verified
-- :x: New password is set
-- :x: Token is refreshed so relogin is necessary
-
-### Edit account
-
-- :x: ...
-
-### Delete account
-
-- :x: Personal information is removed
-- :x: Flag <code>d</code> is added to user
-- :x: Password and token are randomised
-
-### Logout
-
-- :white_check_mark: Cookies are deleted
-- :x: <code>token_expiry</code> is set to past
 
 
 
