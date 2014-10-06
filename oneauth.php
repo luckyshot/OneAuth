@@ -43,11 +43,11 @@
 
 class OneAuth {
 
-	private $version = 	'0.2.1';
-	private $user = false;
-	private $config = array();
+	public $oaversion = 	'0.2.3';
+	protected $user = 		false;
+	protected $config = 	array();
 
-	public function __construct( $config ) {
+	function __construct( $config ) {
 		$this->config = $config;
 		require_once('db.php');
 		$this->db = new DB ($this->config['mysql']['username'], $this->config['mysql']['password'], $this->config['mysql']['database']);
@@ -60,7 +60,7 @@ class OneAuth {
 
 	 * user
 	 * Gets user details, current user if no ID specified
-	 * Returns user data or false if no ID specified and user not logged in
+	 * Returns user data or error
 	 */
 	public function user( $id = '' ) {
 
@@ -109,8 +109,8 @@ class OneAuth {
 	/**
 
 	 * register
-	 * registers a new user
-	 * Returns the user array including an activation link
+	 * registers a new user in DB
+	 * Returns user data including an activation link if activation is true
 	*/
 	public function register( $data ) {
 
@@ -124,7 +124,7 @@ class OneAuth {
 		if ( strlen($data['password']) < $this->config['minpasslength'] ) { return array('error'=>'Password is too short'); }
 
 		// Salt password before storing it in the DB
-		$data['password'] = password_hash( $this->config['salt']['password'].$data['password'], PASSWORD_DEFAULT );
+		$data['password'] = password_hash( $this->config['salt']['password'].$data['password'], PASSWORD_DEFAULT, array('cost'=>$this->config['passwordcost']) );
 
 		// token to use in the activation link or just to have something in there
 		$data['token'] = $this->randomchars();
@@ -157,8 +157,9 @@ class OneAuth {
 			if ( !$this->config['activation'] ) {
 				$this->login( array('email'=>$data['email'], 'password'=>$data['password2']) );
 				unset($data['password2']);
+				$this->send_email('welcome', $data );
 			}else{
-				$this->send_email('activate', $data, $data['email']);
+				$this->send_email('activate', $data );
 			}
 
 			return $data;
@@ -179,8 +180,8 @@ class OneAuth {
 	/**
 
 	 * activate
-	 * activate user account
-	 * Returns true or false
+	 * activate user account and send welcome email
+	 * Returns true or error
 	*/
 	public function activate( $token ) {
 
@@ -208,6 +209,13 @@ class OneAuth {
 		}else{
 			return array( 'error'=>'User not found, invalid activation token' );
 		}
+
+		$email = $this->send_email('welcome', $user );
+		if ($email) {
+			return $email;
+		}else{
+			return array( 'error'=>'Activation OK but error sending email' );
+		}
 	}
 
 
@@ -218,17 +226,19 @@ class OneAuth {
 
 	* edit
 	* Edit user details
+	* Returns true or error
 	*/
 	public function edit( $data, $id = '' ) {
 		$user = $this->user( $id );
 		if (!$user) return false;
 
 		if ( !$id ) {
+
 			// check old password is correct
-			$q = "SELECT * FROM ".$this->config['mysql']['table']." WHERE id = :id LIMIT 1;";
-			$correctPass = $this->db->query($q)
-				->bind(':id', $this->user['id'] )
+			$correctPass = $this->db->query("SELECT * FROM ".$this->config['mysql']['table']." WHERE id = :id LIMIT 1;")
+				->bind(':id', $user['id'] )
 				->single();
+
 			if ( !$correctPass ) {
 				return array('error' => 'User not found');
 			}
@@ -240,29 +250,44 @@ class OneAuth {
 		if ( strlen($data['passwordnew']) > 0 && strlen($data['passwordnew']) < $this->config['minpasslength'] ) { return array('error'=>'Password is too short'); }
 
 		if ( strlen($data['passwordnew'])>0 ) {
-			if ( $data['passwordnew'] !== $data['passwordnew2'] ) { return array('error' => 'new password doesn\'t match'); }
+			if ( $data['passwordnew'] !== $data['passwordnew2'] ) { return array('error' => 'New password doesn\'t match'); }
 			$password = $data['passwordnew'];
 		}else{
 			$password = $data['passwordold'];
 		}
 
-		// update fields
+		// everything ok
 
-		$q = "UPDATE ".$this->config['mysql']['table']." SET email = :email ";
-
-		// password update only when changed
+		// password update only if new provided
 		if ( strlen($data['passwordnew'])>0 ) {
-			$q .= " , password = ':password' ";
+
+			$updateFields = $this->db->query( "UPDATE ".$this->config['mysql']['table']." SET
+				email = :email,
+				password = ':password'
+				WHERE id = :id LIMIT 1;" )
+				->bind(':email', $data['email'] )
+				->bind(':password', password_hash( $this->config['salt']['password'].$password, PASSWORD_DEFAULT, array('cost'=>$this->config['passwordcost']) ) )
+				->bind(':id', $user['id'] )
+				->execute();
+
+		// update other fields except password
+		}else{
+
+			$updateFields = $this->db->query( "UPDATE ".$this->config['mysql']['table']." SET
+				email = :email
+				WHERE id = :id LIMIT 1;" )
+				->bind(':email', $data['email'] )
+				->bind(':id', $user['id'] )
+				->execute();
+
 		}
-		$q .= " WHERE id = :id LIMIT 1;";
 
-		$updateFields = $this->db->query( $q )
-		->bind(':email', $data['email'] )
-		->bind(':password', password_hash( $this->config['salt']['password'].$password, PASSWORD_DEFAULT ) )
-		->bind(':id', $user['id'] )
-		->execute();
+		if ( $updateFields ) {
+			return $updateFields;
+		}else{
+			return array('error' => 'Something went wrong updating user');
+		}
 
-		return $updateFields;
 	}
 
 
@@ -272,8 +297,8 @@ class OneAuth {
 	/**
 
 	 * delete
-	 * Removes all identifiable information from user
-	 * and sets a random password
+	 * Removes all identifiable information from user and sets a random password
+	 * Returns true or false
 	*/
 	public function delete( $id = '' ) {
 		$user = $this->user( $id );
@@ -287,7 +312,7 @@ class OneAuth {
 				flags = 'd',
 				token = ':token'
 				WHERE id = :id LIMIT 1;")
-			->bind(':password', password_hash( $this->randomchars(), PASSWORD_DEFAULT ) )
+			->bind(':password', password_hash( $this->randomchars(), PASSWORD_DEFAULT, array('cost'=>$this->config['passwordcost']) ) )
 			->bind(':date_seen', date('Y-m-d H:i:s'))
 			->bind(':ip', $_SERVER['REMOTE_ADDR'])
 			->bind(':token', sha1( $this->randomchars()) )
@@ -305,8 +330,8 @@ class OneAuth {
 	/**
 
 	 * forgot
-	 * returns a reset token that allows to change the password of the current account
-	 * you will probably want to send this link by email
+	 * Sends an email with a link to reset password
+	 * Returns true or error
 	*/
 	public function forgot( $email ) {
 
@@ -339,6 +364,7 @@ class OneAuth {
 
 	 * reset
 	 * Changes password to new one
+	 * Returns true or error
 	*/
 	public function reset ($userid, $token, $password, $password2) {
 
@@ -362,14 +388,14 @@ class OneAuth {
 		$result = $this->db->query("UPDATE ".$this->config['mysql']['table']." SET
 			password = :password
 			WHERE id = :id LIMIT 1;")
-		->bind(':password', password_hash( $this->config['salt']['password'].$password, PASSWORD_DEFAULT ) )
+		->bind(':password', password_hash( $this->config['salt']['password'].$password, PASSWORD_DEFAULT, array('cost'=>$this->config['passwordcost']) ) )
 		->bind(':id', $this->user['id'])
 		->execute();
 
 		if ( $result ) {
 			return true;
 		}else{
-			return array('error' => 'error reseting password');
+			return array('error' => 'Error reseting password');
 		}
 	}
 
@@ -380,7 +406,8 @@ class OneAuth {
 	/**
 
 	 * login
-	 *
+	 * Logins user to account
+	 * Returns user data or error
 	*/
 	public function login( $data ) {
 
@@ -419,9 +446,14 @@ class OneAuth {
 		$this->user = $user;
 
 		// set token in cookie
+		if ($data['remember']) {
+			$sessionLength = $this->config['session'];
+		}else{
+			$sessionLength = $this->config['session_short'];
+		}
 		$this->user['token'] = $this->randomchars();
 		$_COOKIE['oa'] = $this->user['token'];
-		setcookie( 'oa', $this->user['token'], (time() + $this->config['session']) );
+		setcookie( 'oa', $this->user['token'], (time() + $sessionLength) );
 
 		// set token in DB
 		$result = $this->db->query("UPDATE ".$this->config['mysql']['table']." SET
@@ -433,7 +465,7 @@ class OneAuth {
 		->execute();
 
 		// update user trace
-		$this->update_user_trace();
+		$this->update_user_trace( $sessionLength );
 
 		return $this->user;
 	}
@@ -451,8 +483,8 @@ class OneAuth {
 	public function logout() {
 		$_COOKIE['oa'] = NULL;
 		setcookie('oa', 'good bye!', time()-3600*24*365);
+		// TODO: update user_trace to set token expiry to now
 		unset($this->user);
-		return true;
 	}
 
 
@@ -460,7 +492,7 @@ class OneAuth {
 
 	 * hasflag
 	 * Checks if user has a flag
-	 * Return true or false
+	 * Returns true or false
 	*/
 	public function hasflag( $flag, $id = '' ) {
 		$user = $this->user( $id );
@@ -495,9 +527,9 @@ class OneAuth {
 	/**
 
 	 * d
-	 * method to debug vars quickly
+	 * method to var_dump stuff quickly
 	*/
-	private function d( $d ) {
+	protected function d( $d ) {
 		echo '
 <pre>';
 		var_dump( $d );
@@ -512,8 +544,13 @@ class OneAuth {
 
 	 * update_user_trace
 	 * updates date last seen, ip address and token expiry
+	 * Returns true or false
 	*/
-	private function update_user_trace() {
+	protected function update_user_trace( $sessionLength = null ) {
+
+		if ($sessionLength===null) {
+			// TODO:
+		}
 
 		$result = $this->db->query("UPDATE ".$this->config['mysql']['table']." SET
 			date_seen = :date_seen,
@@ -521,7 +558,7 @@ class OneAuth {
 			ip = :ip
 			WHERE id = :id LIMIT 1;")
 		->bind(':date_seen', date('Y-m-d H:i:s'))
-		->bind(':token_expiry', date('Y-m-d H:i:s', (time() + $this->config['session'])) )
+		->bind(':token_expiry', date('Y-m-d H:i:s', (time() + $sessionLength)) )
 		->bind(':ip', $_SERVER['REMOTE_ADDR'])
 		->bind(':id', $this->user['id'])
 		->execute();
@@ -540,9 +577,10 @@ class OneAuth {
 	 * validate_email
 	 * checks if it's a valid email
 	*/
-	private function validate_email( $email ) {
+	protected function validate_email( $email ) {
+		$email = strtolower($email);
 		if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-			return true;
+			return $email;
 		}else{
 			return false;
 		}
@@ -554,20 +592,22 @@ class OneAuth {
 	 * send_email
 	 * Sends an email to someone based on a template with provided data
 	*/
-	private function send_email( $template, $data ) {
-
+	protected function send_email( $template, $data ) {
 
 		$html =
 			$this->config['templates']['header'] .
 			$this->config['templates'][ $template ] .
 			$this->config['templates']['footer'];
 
+		$subject = $data['template_titles'][ $template ];
+
 		// Put all vars together
 		$data = array_merge( $this->config, $data );
 		foreach ($data as $key => $value) {
-			// NOTE: array values are not allowed, this is both for security reasons and simplicity
+			// NOTE: array values are not allowed, this is for security reasons and simplicity
 			if (gettype($value)!='array') {
 				$html = str_replace('{{'.$key.'}}', $value, $html);
+				$subject = str_replace('{{'.$key.'}}', $value, $subject);
 			}
 		}
 
@@ -575,7 +615,7 @@ class OneAuth {
 		$mailer['fromName'] = 	$data['app_name'];
 		$mailer['fromEmail'] = 	$data['app_email'];
 		$mailer['toEmail'] = 	$data['email'];
-		$mailer['subject'] = 	$data['template_titles'][ $template ];
+		$mailer['subject'] = 	$subject;
 		$mailer['body'] = 		$html;
 		$mailer['headers'] = 	"From: ".$mailer['fromName']." <". $mailer['fromEmail'].">\r\n".
 								"Reply-To: ".$mailer['fromName']." <".$mailer['fromEmail'].">\r\n".
@@ -593,7 +633,7 @@ class OneAuth {
 	 * email_exists
 	 * Checks if email is in the database
 	*/
-	private function email_exists( $email ) {
+	protected function email_exists( $email ) {
 
 		if (!$this->validate_email( $email )) { return false; }
 

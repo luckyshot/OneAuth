@@ -48,6 +48,7 @@ if ($action=='register') {
 	$user = $oa->login(array(
 		'email' => $_POST['email'],
 		'password' => $_POST['password'],
+		'remember' => $_POST['remember']
 	));
 
 	if ($user['error']) {
@@ -194,6 +195,7 @@ $user = $oa->user();
 	<input type="hidden" name="oa" value="login">
 	<input type="email"  name="email" placeholder="Email">
 	<input type="password" name="password" placeholder="Password">
+	<label><input type="checkbox" name="remember" checked="checked"> Remember me?</label>
 	<input type="submit" value="Login">
 </form>
 
